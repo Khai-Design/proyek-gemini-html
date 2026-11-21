@@ -1,1 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aplikasi Web Gemini</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 640px;
+      margin: 40px auto;
+      padding: 0 16px;
+      background: #f8fafc;
+      color: #1e293b;
+    }
+    textarea {
+      width: 100%;
+      height: 110px;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+    #output {
+      margin-top: 20px;
+      padding: 16px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      min-height: 60px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Tanya Gemini</h2>
+  <textarea id="prompt" placeholder="Tulis pertanyaan atau instruksi di sini..."></textarea>
+  <br />
+  <button id="kirimBtn" onclick="kirimPrompt()">Kirim</button>
+  <div id="output">Jawaban akan muncul di sini...</div>
 
+  <script>
+    async function kirimPrompt() {
+      const promptInput = document.getElementById("prompt");
+      const output = document.getElementById("output");
+      const btn = document.getElementById("kirimBtn");
+      const prompt = promptInput.value.trim();
+
+      if (!prompt) return;
+
+      btn.disabled = true;
+      btn.textContent = "Memproses...";
+      output.textContent = "Sedang menunggu jawaban dari Gemini...";
+
+      try {
+        const res = await fetch("/api/gemini", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Terjadi kesalahan.");
+
+        output.textContent = data.reply;
+      } catch (err) {
+        output.textContent = "Error: " + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Kirim";
+      }
+    }
+  </script>
+</body>
+</html>
